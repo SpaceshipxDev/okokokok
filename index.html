@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Group Chat UI</title>
+<style>
+  body, html {
+    height: 100%;  
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+  }
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;  
+    max-width: 672px;
+    margin: 0 auto;  
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .chat-area {
+    padding: 20px;
+    overflow-y: auto;
+    flex-grow: 1;  
+  }
+ 
+  .chat-message {
+    display: flex;
+    align-items: flex-end;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+  }
+  .message-content {
+    padding: 10px;
+    border-radius: 20px;
+    background-color: #e0e0e0;
+    max-width: calc(100% - 40px);
+    word-wrap: break-word;
+  }
+  .user-message .message-content {
+    background-color: #000;
+    color: white;
+    margin-left: auto;
+  }
+  .bot-message .message-content {
+    background-color: #f0f0f0;
+  }
+  .input-form {  
+    padding: 10px;  
+    background-color: #f9f9f9;  
+    display: flex;  
+    margin-bottom: 30px;  
+  }  
+  .input-field {
+    flex-grow: 1;
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 0.85em;
+    width: 100%;
+  }
+  .send-button {
+    padding: 10px 20px;
+    background-color: #000;
+    border: none;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.2s ease;
+  }
+  .send-button:hover {
+    background-color: #333;
+  }
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="chat-area" id="chatArea">
+  </div>
+  <form class="input-form" id="inputForm">
+    <input type="text" class="input-field" id="inputField">
+    <button type="submit" class="send-button">Send</button>
+  </form>
+</div>
+
+<script>
+  const chatArea = document.getElementById('chatArea');
+  const inputForm = document.getElementById('inputForm');
+  const inputField = document.getElementById('inputField');
+
+  inputForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    const message = inputField.value.trim();
+    if (message) {
+      appendMessage(message, 'user-message');
+      inputField.value = '';
+
+      fetch('https://us-central1-secret-bloom-409410.cloudfunctions.net/function-2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'  
+        },
+        body: message  
+      })
+        .then(response => response.text())  
+        .then(data => {
+          appendMessage(data, 'bot-message');
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+  });
+
+
+  function appendMessage(text, className) {
+    const messageDiv = document.createElement('div');
+    const contentDiv = document.createElement('div');
+    contentDiv.textContent = text;
+    contentDiv.classList.add('message-content');
+    messageDiv.classList.add('chat-message', className);
+    messageDiv.appendChild(contentDiv);
+    chatArea.appendChild(messageDiv);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+</script>
+
+</body>
+</html>
+
+
